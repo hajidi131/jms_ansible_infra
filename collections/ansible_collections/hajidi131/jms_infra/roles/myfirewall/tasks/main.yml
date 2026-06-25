@@ -1,0 +1,20 @@
+---
+- name: Install the package - {{ pkgs }}
+  ansible.builtin.dnf:
+    name: "{{ pkgs }}"
+    state: present
+
+- name: Start the service - {{ svcs }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ svcs }}"
+
+- name: Open the service port - {{ fw_svcs }}
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: true        # 영구 규칙 (재부팅 후에도 유지)
+    immediate: true        # 지금 즉시 적용
+    state: enabled
+  loop: "{{ fw_svcs }}"    # ★ 출처: 상위 역할이 넘겨준 값

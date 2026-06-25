@@ -1,0 +1,7 @@
+---
+- name: FTP 서버 구축
+  hosts: ftp
+  gather_facts: true
+  roles:
+    - hajidi131.jms_infra.common
+    - hajidi131.jms_infra.myftp

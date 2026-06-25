@@ -1,0 +1,12 @@
+# =====================================================================
+# 파일 위치 : roles/mymail/meta/main.yml
+# 역할      : mymail 역할의 종속성 선언.
+#             메일 관련 포트를 모두 myfirewall 로 한 번에 개방.
+#             smtp(25), smtps(465), submission(587), pop3(110),
+#             pop3s(995), imap(143), imaps(993)
+# =====================================================================
+---
+galaxy_info: { role_name: mymail, min_ansible_version: "2.14" }
+dependencies:
+  - role: hajidi131.jms_infra.myfirewall
+    fw_svcs: [smtp, smtps, smtp-submission, pop3, pop3s, imap, imaps]

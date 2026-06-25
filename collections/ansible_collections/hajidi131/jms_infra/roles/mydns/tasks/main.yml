@@ -1,0 +1,49 @@
+---
+- name: 1) Install BIND - {{ pkgs }}
+  ansible.builtin.dnf: { name: "{{ pkgs }}", state: present }
+
+- name: 2) Deploy main config
+  ansible.builtin.template:
+    src: named.conf.j2
+    dest: "{{ named_conf }}"
+    owner: root
+    group: named
+    mode: '0640'
+    validate: named-checkconf %s        # 배포 전 문법 검사
+  notify: restart named
+
+- name: 3) Register zones
+  ansible.builtin.template:
+    src: named.rfc1912.zones.j2
+    dest: "{{ zones_conf }}"
+    owner: root
+    group: named
+    mode: '0640'
+  notify: restart named
+
+- name: 4) Deploy forward zone
+  ansible.builtin.template:
+    src: forward.zone.j2
+    dest: "{{ named_dir }}/{{ forward_zone_file }}"
+    owner: root
+    group: named
+    mode: '0640'
+    validate: named-checkzone {{ domain_name }} %s
+  notify: restart named
+
+- name: 5) Deploy reverse zone
+  ansible.builtin.template:
+    src: reverse.zone.j2
+    dest: "{{ named_dir }}/{{ reverse_zone_file }}"
+    owner: root
+    group: named
+    mode: '0640'
+    validate: named-checkzone {{ reverse_zone }} %s
+  notify: restart named
+
+- name: 6) Start & enable - {{ svcs }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ svcs }}"

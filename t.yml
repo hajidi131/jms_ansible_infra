@@ -1,0 +1,4 @@
+---
+- hosts: infra
+  roles: [hajidi131.jms_infra.common]
+  

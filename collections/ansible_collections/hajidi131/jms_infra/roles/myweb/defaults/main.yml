@@ -1,0 +1,26 @@
+---  #myweb role(httpd, 톰캣 설치 role)의 기본값(default variables)
+pkgs: [httpd, mod_ssl]
+svcs: [httpd]
+webconf: /etc/httpd/conf.d/vhost.conf
+docroot: /var/www/html
+
+# Tomcat 변수 
+tomcat_enabled: true
+tomcat_version: "9.0.118"  # 톰캣 버전 
+tomcat_download_url: "https://archive.apache.org/dist/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+tomcat_java_pkg: java-17-openjdk  # 톰캣 패키지 
+tomcat_user: tomcat               # 톰캣 유저 이름 
+tomcat_group: tomcat              # 톰캣 그룹 이름
+tomcat_install_base: /opt/tomcat  # 톰캣 설치 경로 
+tomcat_home: /opt/tomcat/latest   #
+tomcat_http_port: 8080            # 톰캣 서비스 포트
+tomcat_ajp_port: 8009             # Apache 웹서버(httpd)와 Tomcat을 연동할 때 사용하는 포트     
+tomcat_proxy_path: /app # 프록시(Reverse Proxy) 경로 설정, 웹서버(Apache 또는 Nginx)가 /app 경로로 들어오는 요청을 Tomcat으로 전달(프록시) 할 때 사용하는 경로
+
+
+# 파일 위치 : roles/myweb/defaults/main.yml
+# 역할      : myweb 역할의 기본 변수.
+#             Apache 관련 변수(패키지, 설정 파일 경로, 문서 루트)와
+#             Tomcat 연동 변수(버전, 다운로드 URL, 포트, 경로)를 함께 정의.
+#             tomcat_enabled: true 로 Tomcat 연동을 켜고 끌 수 있음.
+# ==============================================================

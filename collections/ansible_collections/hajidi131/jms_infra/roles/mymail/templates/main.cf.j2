@@ -1,0 +1,11 @@
+myhostname = mail.{{ domain_name }}
+mydomain = {{ domain_name }}
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+mynetworks = {{ internal_network }}, 127.0.0.0/8
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+smtpd_recipient_restrictions = permit_mynetworks,permit_sasl_authenticated,reject

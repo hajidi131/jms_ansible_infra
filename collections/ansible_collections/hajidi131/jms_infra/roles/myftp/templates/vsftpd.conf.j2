@@ -1,0 +1,20 @@
+{# ===================================================================== #}
+{# 파일 위치 : roles/myftp/templates/vsftpd.conf.j2                      #}
+{# 역할      : vsftpd FTP 서버 설정 파일 생성.                           #}
+{#             익명 접속 차단, 로컬 사용자 허용, chroot(홈 가두기),        #}
+{#             수동(PASV) 모드 포트 범위 설정.                            #}
+{#             → /etc/vsftpd/vsftpd.conf 로 배포됨.                      #}
+{# ===================================================================== #}
+anonymous_enable=NO           {# 익명 FTP 접속 차단 #}
+local_enable=YES              {# 로컬 시스템 계정으로 로그인 허용 #}
+write_enable=YES              {# 업로드/삭제 등 쓰기 허용 #}
+chroot_local_user=YES         {# 로컬 사용자를 자기 홈 디렉토리에 가둠 #}
+allow_writeable_chroot=YES    {# chroot 된 디렉토리도 쓰기 허용 #}
+listen=YES                    {# standalone 모드로 실행 #}
+listen_ipv6=NO
+pam_service_name=vsftpd
+userlist_enable=YES
+ftpd_banner=Welcome to {{ domain_name }} FTP service.
+pasv_enable=YES               {# 수동(PASV) 모드 활성화 #}
+pasv_min_port=40000           {# PASV 데이터 포트 범위 시작 #}
+pasv_max_port=40100           {# PASV 데이터 포트 범위 끝 #}

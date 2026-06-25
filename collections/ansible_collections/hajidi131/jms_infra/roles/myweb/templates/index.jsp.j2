@@ -1,0 +1,11 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
+<!DOCTYPE html>
+<html>
+<head><title>Tomcat via Apache</title></head>
+<body style="font-family:sans-serif;text-align:center;margin-top:80px">
+  <h1>Hello from Apache Tomcat (WAS)</h1>
+  <p>이 페이지는 Apache(httpd) → mod_proxy_ajp → Tomcat(<%= "AJP:{{ tomcat_ajp_port }}" %>) 로 전달되었습니다.</p>
+  <p>Server time: <%= new java.util.Date() %></p>
+  <p>Served by: <%= application.getServerInfo() %></p>
+</body>
+</html>

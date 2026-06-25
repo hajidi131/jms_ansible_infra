@@ -1,0 +1,10 @@
+# =====================================================================
+# 파일 위치 : roles/mymail/defaults/main.yml
+# 역할      : mymail 역할의 기본 변수.
+#             postfix(SMTP 송신) + dovecot(POP3/IMAP 수신) + s-nail(테스트 클라이언트)
+#             두 개의 서비스(postfix, dovecot)를 같이 기동함.
+# =====================================================================
+---
+pkgs: [postfix, dovecot, s-nail]  # 메일 관련 패키지를 기본 변수로 설정 
+svcs: [postfix, dovecot]          # 서비스 이름 
+mail_users: [user01, user02]       # 생성할 메일 사용자 목록

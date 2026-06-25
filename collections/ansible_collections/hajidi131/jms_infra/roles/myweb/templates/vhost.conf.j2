@@ -1,0 +1,26 @@
+<VirtualHost *:80>
+    ServerName www.{{ domain_name }}
+    ServerAlias {{ domain_name }}
+    DocumentRoot "{{ docroot }}"
+    <Directory "{{ docroot }}">
+        Require all granted
+        Options Indexes Includes
+    </Directory>
+{% if tomcat_enabled | default(false) %}
+    # ── Apache → Tomcat (mod_proxy_ajp) ──
+    ProxyPreserveHost On
+    ProxyPass        {{ tomcat_proxy_path }}  ajp://127.0.0.1:{{ tomcat_ajp_port }}{{ tomcat_proxy_path }}
+    ProxyPassReverse {{ tomcat_proxy_path }}  ajp://127.0.0.1:{{ tomcat_ajp_port }}{{ tomcat_proxy_path }}
+{% endif %}
+</VirtualHost>
+
+
+
+{# ===================================================================== #}
+{# 파일 위치 : roles/myweb/templates/vhost.conf.j2                       #}
+{# 역할      : Apache 가상호스트(VirtualHost) 설정 파일 생성.             #}
+{#             80번 포트로 들어오는 요청을 처리할 가상호스트를 정의.        #}
+{#             tomcat_enabled 가 true 이면 /app 경로를 AJP 로 Tomcat 에   #}
+{#             프록시하는 ProxyPass 설정도 함께 추가됨.                    #}
+{#             → /etc/httpd/conf.d/vhost.conf 로 배포됨.                  #}
+{# ===================================================================== #}

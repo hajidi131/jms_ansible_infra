@@ -1,0 +1,11 @@
+# =====================================================================
+# 위치 : 제어 노드 — ~/ansible_infra/inventory/host_vars/
+# 역할 : 각 호스트에만 적용되는 변수 파일 생성.
+#        host_role 변수는 restore.yml(원복) 에서 "이 서버가 뭐하는 서버인지"
+#        판단할 때 사용됨.
+#        파일명은 inventory/hosts 에 정의한 호스트명과 정확히 일치해야 함.
+# =====================================================================
+echo -e "---\nhost_role: dns"  > inventory/host_vars/myDNS.yml
+echo -e "---\nhost_role: web"  > inventory/host_vars/ansible-myWEB.yml
+echo -e "---\nhost_role: ftp"  > inventory/host_vars/ansible-myFTP.yml
+echo -e "---\nhost_role: mail" > inventory/host_vars/ansible-myMAIL.yml

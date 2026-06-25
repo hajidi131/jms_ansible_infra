@@ -1,0 +1,15 @@
+---
+- name: restart httpd
+  ansible.builtin.systemd: { name: httpd, state: restarted }
+- name: reload systemd
+  ansible.builtin.systemd: { daemon_reload: true }
+- name: restart tomcat
+  ansible.builtin.systemd: { name: tomcat, state: restarted }
+
+  #=====================================================================
+# 파일 위치 : roles/myweb/handlers/main.yml
+# 역할      : myweb 역할에서 notify 로 예약된 재시작 처리기 모음.
+#             httpd, systemd(데몬 리로드), tomcat 3가지를 정의.
+#             설정이 변경된 경우에만 play 끝에 한 번씩 실행됨.
+# =====================================================================
+  

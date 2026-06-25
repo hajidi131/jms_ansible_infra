@@ -1,0 +1,4 @@
+---
+pkgs: [firewalld]
+svcs: [firewalld]
+# fw_svcs 는 일부러 비움 → 상위 역할이 넘겨줌

@@ -1,0 +1,10 @@
+# =====================================================================
+# 파일 위치 : roles/myftp/meta/main.yml
+# 역할      : myftp 역할의 종속성 선언.
+#             myftp 실행 전 myfirewall 로 ftp(21번) 포트를 먼저 개방.
+# =====================================================================
+---
+galaxy_info: { role_name: myftp, min_ansible_version: "2.14" }
+dependencies:
+  - role: hajidi131.jms_infra.myfirewall
+    fw_svcs: [ftp]    # 21번 포트 개방

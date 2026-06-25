@@ -1,0 +1,10 @@
+namespace: hajidi131
+name: jms_infra
+version: 1.0.0
+readme: README.md
+authors: [soldesk]
+description: Full code-based infrastructure automation package
+license: [MIT]
+dependencies:
+  "ansible.posix": ">=1.5.0"
+repository: https://github.com/hajidi131/ansible_infra

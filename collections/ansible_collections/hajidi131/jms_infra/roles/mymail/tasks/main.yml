@@ -1,0 +1,64 @@
+# =====================================================================
+# 파일 위치 : roles/mymail/tasks/main.yml
+# 역할      : Postfix(SMTP) + Dovecot(POP3/IMAP) 메일 서버 구축 태스크.
+#             Postfix main.cf 는 template 으로 통째로 배포.
+#             Dovecot 설정은 기존 파일의 특정 줄만 lineinfile/blockinfile 로 수정.
+#             마지막에 SASL 소켓을 연결하여 Postfix 가 Dovecot 인증을 사용하도록 연동.
+# =====================================================================
+---
+- name: 1) Install - {{ pkgs }}
+  ansible.builtin.dnf: { name: "{{ pkgs }}", state: present }
+
+- name: 2) Create mail users
+  ansible.builtin.user:
+    name: "{{ item }}"
+    password: "{{ mail_password | password_hash('sha512') }}"
+  loop: "{{ mail_users }}"
+
+- name: 3) Deploy postfix main.cf   # templates/main.cf.j2 → /etc/postfix/main.cf
+  ansible.builtin.template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+  notify: restart postfix
+
+# ── Dovecot 설정: 기존 파일의 특정 줄만 수정 (lineinfile) ──
+- name: 4) dovecot protocols        # 사용할 프로토콜 활성화
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    regexp: '^#?protocols ='        # 이 패턴의 줄을 찾아서
+    line: 'protocols = imap pop3 lmtp submission'  # 이 내용으로 교체
+  notify: restart dovecot
+
+- name: 6) allow plaintext auth     # 평문 인증 허용 
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/conf.d/10-auth.conf
+    regexp: '^#?disable_plaintext_auth ='
+    line: 'disable_plaintext_auth = no'
+  notify: restart dovecot
+
+- name: 8) mail_location (mbox)     # 메일 저장 위치 설정 (mbox 형식)
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/conf.d/10-mail.conf
+    regexp: '^#?mail_location ='
+    line: 'mail_location = mbox:~/mail:INBOX=/var/mail/%u'
+  notify: restart dovecot
+
+- name: 10) postfix-dovecot SASL socket  # Postfix 가 Dovecot SASL 인증을 사용하도록 소켓 연결
+  ansible.builtin.blockinfile:           # 여러 줄을 한 블록으로 삽입
+    path: /etc/dovecot/conf.d/10-master.conf
+    marker: "  # {mark} ANSIBLE POSTFIX SASL"
+    insertafter: 'service auth \{'
+    block: |2
+        unix_listener /var/spool/postfix/private/auth {
+          mode = 0666
+          user = postfix
+          group = postfix
+        }
+  notify: restart dovecot
+
+- name: 12) Start & enable
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ svcs }}"

@@ -1,0 +1,5 @@
+---
+galaxy_info: { role_name: mydns, min_ansible_version: "2.14" }
+dependencies:
+  - role: hajidi131.jms_infra.myfirewall    # ★ mydns 보다 먼저 실행됨
+    fw_svcs: [dns]                     # ★ 열 포트(53)를 파라미터로 전달

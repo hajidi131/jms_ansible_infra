@@ -1,0 +1,13 @@
+$TTL 86400
+@       IN SOA  ns1.{{ domain_name }}. root.{{ domain_name }}. (
+                {{ zone_serial }} 1D 1H 1W 3H )
+@               IN  NS      ns1.{{ domain_name }}.
+{% for mx in dns_mx_records %}
+@               IN  MX  {{ mx.priority }}  {{ mx.host }}
+{% endfor %}
+{% for r in dns_a_records %}
+{{ "%-15s" | format(r.name) }} IN  A   {{ r.ip }}
+{% endfor %}
+{% for h in infra_hosts %}
+{{ "%-15s" | format(h.name) }} IN  A   {{ h.ip }}
+{% endfor %}

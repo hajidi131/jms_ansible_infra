@@ -1,0 +1,3 @@
+---
+host_role: mail
+dns_nic: eth0

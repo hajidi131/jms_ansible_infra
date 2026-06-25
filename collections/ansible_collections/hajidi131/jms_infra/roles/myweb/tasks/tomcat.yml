@@ -1,0 +1,76 @@
+# =====================================================================
+# 파일 위치 : roles/myweb/tasks/tomcat.yml
+# 역할      : Tomcat 9 설치 및 Apache AJP 연동 태스크.
+#             main.yml 의 7번 태스크(include_tasks)에서 호출됨.
+#             Java 설치 → 전용 계정 생성 → 다운로드/압축해제 → 심볼릭링크 →
+#             server.xml/systemd 유닛 배포 → SELinux 설정 → 서비스 기동 순서.
+# =====================================================================
+---
+- name: 0) 자바 설치 
+  ansible.builtin.dnf: { name: "{{ tomcat_java_pkg }}", state: present }
+
+- name: 1) 자바 환경변수 탐색     # java 경로에서 JDK 홈 디렉토리 자동 탐색
+  ansible.builtin.shell: dirname $(dirname $(readlink -f $(command -v java)))
+  register: java_home_result        # 결과를 변수에 저장 → tomcat.service.j2 에서 사용
+  changed_when: false
+
+- name: 2) 톰캣 사용자/그룹 생성   # 로그인 불가 시스템 계정 (보안)
+  ansible.builtin.group: { name: "{{ tomcat_group }}", system: true }
+- ansible.builtin.user:
+    name: "{{ tomcat_user }}"    # 해당 변수들은 defaults/main.yml의 디폴트(전역변수)참조 
+    group: "{{ tomcat_group }}"
+    home: "{{ tomcat_home }}"
+    shell: /sbin/nologin            # 직접 로그인 불가
+    system: true
+    create_home: false
+
+- name: 3) 톰캣 다운로드      # archive.apache.org 에서 tar.gz 다운로드
+  ansible.builtin.get_url:
+    url: "{{ tomcat_download_url }}"    # 해당 변수들은 defaults/main.yml의 디폴트(전역변수)참조
+    dest: "/tmp/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    mode: '0644'
+
+- name: 4) 톰캣파일 압축해제                # /opt/tomcat/ 에 압축 해제
+  ansible.builtin.unarchive:
+    src: "/tmp/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    dest: "{{ tomcat_install_base }}"
+    remote_src: true               # 파일이 관리 호스트에 있음
+    owner: "{{ tomcat_user }}"          
+    group: "{{ tomcat_group }}"
+    creates: "{{ tomcat_install_base }}/apache-tomcat-{{ tomcat_version }}"   # 이미 있으면 건너뜀
+
+- name: 5) 심볼릭 링크 생성  #opt/tomcat/latest → /opt/tomcat/apache-tomcat-9.0.118
+  ansible.builtin.file:
+    src: "{{ tomcat_install_base }}/apache-tomcat-{{ tomcat_version }}"
+    dest: "{{ tomcat_home }}"
+    state: link
+
+- name: 6) server.xml 배포      # HTTP 8080(127.0.0.1) + AJP 8009(127.0.0.1) 커넥터 설정
+  ansible.builtin.template:
+    src: server.xml.j2       #배포할 server.xml.j2 소스파일 
+    dest: "{{ tomcat_home }}/conf/server.xml"    # 톰캣 설정파일 경로로 배포 
+  notify: restart tomcat                         # 톰캣 재시작 
+
+- name: 7) systemd 서비스 등록   # Tomcat 을 systemd 서비스로 등록
+  ansible.builtin.template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/tomcat.service
+  notify: [reload systemd, restart tomcat]  # "설정 파일이 바뀔 때만 서비스를 재시작하라"
+
+- name: 8) 샘플 index.jsp파일 배포   # /app/ 접속 시 보이는 테스트 JSP 페이지
+  ansible.builtin.template:
+    src: index.jsp.j2
+    dest: "{{ tomcat_home }}/webapps{{ tomcat_proxy_path }}/index.jsp"
+
+- name: 9) SELinux 설정 
+  ansible.posix.seboolean:
+    name: httpd_can_network_connect  # Apache 가 Tomcat 포트로 나가는 것을 SELinux 허용
+    state: true
+    persistent: true                 # -P 옵션과 동일: 재부팅 후에도 유지
+
+- name: 10) 톰캣 서비스 시작 및 시작서비스로 등록 
+  ansible.builtin.systemd:
+    name: tomcat
+    state: started
+    enabled: true
+    daemon_reload: true

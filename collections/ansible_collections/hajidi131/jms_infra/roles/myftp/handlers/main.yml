@@ -1,0 +1,7 @@
+# =====================================================================
+# 파일 위치 : roles/myftp/handlers/main.yml
+# 역할      : vsftpd.conf 가 변경되었을 때 vsftpd 를 재시작하는 처리기.
+# =====================================================================
+---
+- name: restart vsftpd
+  ansible.builtin.systemd: { name: vsftpd, state: restarted }

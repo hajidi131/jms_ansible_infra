@@ -1,0 +1,10 @@
+---
+galaxy_info: { role_name: myweb, min_ansible_version: "2.14" }
+dependencies:
+  - role: hajidi131.jms_infra.myfirewall
+    fw_svcs: [http, https]
+# =====================================================================
+# 파일 위치 : roles/myweb/meta/main.yml
+# 역할      : myweb 역할의 종속성 선언.
+#             myweb 실행 전 myfirewall 을 먼저 실행하여 http(80)/https(443) 포트를 개방.
+# =====================================================================

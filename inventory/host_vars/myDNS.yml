@@ -1,0 +1,3 @@
+---
+host_role: dns
+dns_nic: eth1

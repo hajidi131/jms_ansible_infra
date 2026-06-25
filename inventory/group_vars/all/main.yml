@@ -1,0 +1,21 @@
+---
+domain_name: jms.com     #dns는 jms.com
+dns_server_ip: 192.168.30.10  # 메인 dns서버-firewall-ansible
+internal_network: 192.168.30.0/24  #게이트웨이 주소 
+reverse_zone: 30.168.192.in-addr.arpa  # 리버스 존 
+
+# 모든 서버 목록을 '한 벌의 데이터'로 — 존 파일/etc-hosts 가 이걸 공유
+infra_hosts:
+  - { name: myDNS,         ip: 192.168.30.10, role: dns}  
+  - { name: ansible-myWEB, ip: 192.168.30.11, role: web}
+  - { name: ansible-myFTP, ip: 192.168.30.12, role: ftp }
+  - { name: ansible-myMAIL,ip: 192.168.30.13, role: mail}
+
+dns_a_records:
+  - { name: ns1,  ip: 192.168.30.10 }    
+  - { name: www,  ip: 192.168.30.11 }
+  - { name: ftp,  ip: 192.168.30.12 }
+  - { name: mail, ip: 192.168.30.13 }
+
+dns_mx_records:
+  - { priority: 10, host: mail.jms.com. }

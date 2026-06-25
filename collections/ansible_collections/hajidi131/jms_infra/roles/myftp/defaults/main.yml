@@ -1,0 +1,11 @@
+# =====================================================================
+# 파일 위치 : roles/myftp/defaults/main.yml
+# 역할      : myftp 역할의 기본 변수.
+#             vsftpd(서버) + ftp(클라이언트 테스트용) 패키지,
+#             설정 파일 경로, 생성할 FTP 사용자 목록 정의.
+# =====================================================================
+---
+pkgs: [vsftpd, ftp]
+svcs: [vsftpd]
+vsftpd_conf: /etc/vsftpd/vsftpd.conf
+ftp_users: [user01, user02]    # 생성할 FTP 로컬 사용자 목록

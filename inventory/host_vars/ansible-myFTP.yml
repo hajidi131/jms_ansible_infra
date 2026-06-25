@@ -1,0 +1,3 @@
+---
+host_role: ftp
+dns_nic: eth0

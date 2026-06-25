@@ -1,0 +1,29 @@
+# =====================================================================
+# 파일 위치 : ~/ansible_infra/site.yml
+# 역할      : 전체 인프라를 한 번에 구축하는 마스터 플레이북.
+#             "무엇을 할지" 를 정의. Play 를 서비스별로 나눠
+#             각자 다른 hosts 그룹에 다른 역할을 적용.
+#             ansible-playbook site.yml 한 번으로 4대 전체 구축 완료.
+# =====================================================================
+---
+- name: 0) 공통 기초               # 전체 4대에 /etc/hosts, 기본 패키지 설치
+  hosts: infra
+  gather_facts: true
+  roles: [hajidi131.jms_infra.common]
+
+- name: 1) DNS                      # myDNS(192.168.30.10) 에만 BIND 구축
+  hosts: dns
+  roles: [hajidi131.jms_infra.mydns]
+
+- name: 2) WEB + Tomcat             # ansible-myWEB(192.168.30.11) 에만 Apache+Tomcat 구축
+  hosts: web
+  gather_facts: true                # 템플릿에서 ansible_fqdn 등 팩트 변수 사용
+  roles: [hajidi131.jms_infra.myweb]
+
+- name: 3) FTP                      # ansible-myFTP(192.168.30.12) 에만 vsftpd 구축
+  hosts: ftp
+  roles: [hajidi131.jms_infra.myftp]
+
+- name: 4) MAIL                     # ansible-myMAIL(192.168.30.13) 에만 Postfix+Dovecot 구축
+  hosts: mail
+  roles: [hajidi131.jms_infra.mymail]

@@ -1,0 +1,10 @@
+# =====================================================================
+# 파일 위치 : roles/mymail/handlers/main.yml
+# 역할      : postfix 와 dovecot 각각의 재시작 처리기.
+#             두 서비스가 독립적으로 재시작될 수 있도록 별도 정의.
+# =====================================================================
+---
+- name: restart postfix
+  ansible.builtin.systemd: { name: postfix, state: restarted }
+- name: restart dovecot
+  ansible.builtin.systemd: { name: dovecot, state: restarted }

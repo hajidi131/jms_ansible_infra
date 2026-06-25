@@ -1,0 +1,21 @@
+namespace: hajidi131
+name: jms_infra
+version: 1.0.0
+readme: README.md
+authors:
+  - hajidi131
+description: DNS/WEB(Apache+Tomcat)/FTP/MAIL infrastructure automation
+license:
+  - MIT
+tags:
+  - dns
+  - web
+  - ftp
+  - mail
+  - infrastructure
+repository: https://github.com/hajidi131/jms_ansible_infra
+documentation: https://github.com/hajidi131/jms_ansible_infra
+homepage: https://github.com/hajidi131/jms_ansible_infra
+issues: https://github.com/hajidi131/jms_ansible_infra/issues
+dependencies:
+  "ansible.posix": ">=1.5.0"

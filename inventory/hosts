@@ -1,0 +1,20 @@
+[dns]
+myDNS          ansible_host=192.168.30.10
+
+[web]
+ansible-myWEB  ansible_host=192.168.30.11
+
+[ftp]
+ansible-myFTP  ansible_host=192.168.30.12
+
+[mail]
+ansible-myMAIL ansible_host=192.168.30.13
+
+[infra:children]
+dns
+web
+ftp
+mail
+
+[infra:vars]
+ansible_user=ansible

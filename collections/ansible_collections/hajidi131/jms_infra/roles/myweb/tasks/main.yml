@@ -1,0 +1,63 @@
+---
+# roles/myweb/tasks/main.yml
+# myweb role의 메인 태스크(작업)파일 - httpd 설치/설정 및 톰캣 연동을 순서대로 실행
+
+- name: 1) 패키지 설치 - {{ pkgs }}
+  ansible.builtin.dnf: { name: "{{ pkgs }}", state: present }
+  # defaults/main.yml의 pkgs 변수에 정의된 패키지(httpd, mod_ssl)를 설치
+
+- name: 2) Set ServerName
+  ansible.builtin.lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^#?ServerName '
+    line: "ServerName www.{{ domain_name }}:80"
+  notify: restart httpd
+  # httpd.conf에서 ServerName 항목을 찾아(주석 포함) domain_name 변수로 교체
+  # 변경 발생 시 restart httpd 핸들러 호출
+
+- name: 3) Create docroot
+  ansible.builtin.file:
+    path: "{{ docroot }}"  # /var/www/html
+    state: directory       # 존재하지 않을 시 생성 
+    owner: apache
+    group: apache
+    mode: '0755'
+  # 웹 루트 디렉토리(/var/www/html)를 apache 소유로 생성
+  # 이미 존재하면 소유자/권한만 맞춤
+
+- name: 4) Deploy index.html
+  ansible.builtin.copy:
+    src: index.html
+    dest: "{{ docroot }}/index.html"
+    owner: apache
+    group: apache
+    mode: '0644'
+  # roles/myweb/files/index.html을 웹 루트에 복사
+  # apache 소유, 읽기 전용(644)으로 배포
+
+- name: 5) Configure virtual host
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "{{ webconf }}"  # /etc/httpd/conf.d/vhost.conf
+    owner: root
+    group: root
+    mode: '0644'
+    #validate: httpd -t -f %s  # 배포 전 httpd 문법 검사 (실패 시 배포 중단)
+  notify: restart httpd
+  # vhost.conf.j2 템플릿을 렌더링해 /etc/httpd/conf.d/vhost.conf에 배포
+  # 문법 검사 통과 후 변경 발생 시 restart httpd 핸들러 호출
+
+- name: 6) Start & enable - {{ svcs }}
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ svcs }}"
+  # svcs 변수에 정의된 서비스(httpd)를 순회하며 시작 + 부팅 자동시작 등록
+
+# ── Tomcat 연동 ──
+- name: 7) Include Tomcat integration
+  ansible.builtin.include_tasks: tomcat.yml
+  when: tomcat_enabled | default(false)
+  # tomcat_enabled가 true일 때만 tomcat.yml 태스크를 동적으로 불러와 실행
+  # false이거나 미정의 시 이 태스크 전체를 건너뜀

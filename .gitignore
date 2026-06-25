@@ -1,0 +1,8 @@
+vault-pass
+secret.yml
+*.retry
+*.tar.gz
+__pycache__/
+.ansible/
+vault-pass
+secret.yml

@@ -1,0 +1,37 @@
+# =====================================================================
+# 파일 위치 : roles/myftp/tasks/main.yml
+# 역할      : vsftpd FTP 서버 구축 태스크.
+#             패키지 설치 → 사용자 생성(비번 해시화) → 설정 배포 →
+#             SELinux 홈디렉토리 업로드 허용 → 서비스 기동 순서.
+# =====================================================================
+---
+- name: 1) FTP 패키지 설치   
+  ansible.builtin.dnf: { name: "{{ pkgs }}", state: present }
+
+- name: 2) FTP 사용자 생성 
+  ansible.builtin.user:
+    name: "{{ item }}"
+    password: "{{ ftp_password | password_hash('sha512') }}"   # 평문→SHA512 해시 변환
+  loop: "{{ ftp_users }}"    # user01, user02 각각 생성
+
+- name: 3) vsftpd.conf 파일 생성 
+  ansible.builtin.template:
+    src: vsftpd.conf.j2      # templates/vsftpd.conf.j2 → /etc/vsftpd/vsftpd.conf
+    dest: "{{ vsftpd_conf }}"
+    owner: root
+    group: root
+    mode: '0600'             # vsftpd.conf 는 root 만 읽을 수 있어야 함
+  notify: restart vsftpd
+
+- name: 5) SELinux - FTP 홈디렉터리 sebool 허용으로 업로드 가능  
+  ansible.posix.seboolean:
+    name: ftpd_full_access       # 로컬 사용자가 홈 디렉토리에 업로드 가능하도록 sebool 설정 
+    state: true
+    persistent: true         # 재부팅 후에도 유지
+
+- name: 6) 서비스 시작 & 부팅시 자동 시작     
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ svcs }}"

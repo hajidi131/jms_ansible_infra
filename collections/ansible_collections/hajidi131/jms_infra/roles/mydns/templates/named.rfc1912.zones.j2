@@ -1,0 +1,10 @@
+zone "{{ domain_name }}" IN {
+    type master;
+    file "{{ forward_zone_file }}";
+    allow-update { none; };
+};
+zone "{{ reverse_zone }}" IN {
+    type master;
+    file "{{ reverse_zone_file }}";
+    allow-update { none; };
+};

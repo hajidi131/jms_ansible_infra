@@ -1,0 +1,3 @@
+---
+host_role: web
+dns_nic: eth0

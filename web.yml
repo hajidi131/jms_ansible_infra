@@ -1,0 +1,7 @@
+---
+- name: WEB 서버 구축
+  hosts: web
+  gather_facts: true
+  roles:
+    - hajidi131.jms_infra.common  # 솔데스크 인프라 
+    - hajidi131.jms_infra.myweb
