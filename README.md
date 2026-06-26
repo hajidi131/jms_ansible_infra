@@ -3,6 +3,41 @@
 Ansible Collection + Role 구조로 DNS · WEB(+Tomcat) · FTP · MAIL 4대 서버를
 **코드 한 번**으로 구축 · 배포 · 원복하는 인프라 자동화 프로젝트입니다.
 
+
+#### 사전 환경설정 스크립트(필수!!!!!!!!!!)####
+# ------------------------------------------------------------------
+# 1. 환경 변수 설정 (여기에 실제 root 비밀번호를 입력하세요)
+# ------------------------------------------------------------------
+ROOT_PASS="여기에_실제_ROOT_비밀번호_입력"
+ANSIBLE_PASS="ansible"
+
+# 2. 제어 노드에 SSH 키가 없으면 생성
+[ -f ~/.ssh/id_ed25519 ] || ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
+
+# 3. 자동화를 위한 sshpass 패키지 설치 (CentOS/RHEL/Rocky 기반 OS 기준)
+sudo dnf install -y epel-release && sudo dnf install -y sshpass
+
+# 4. 대상 서버 리스트 순회하며 한 줄 명령어로 실행
+for IP in 192.168.30.10 192.168.30.11 192.168.30.12 192.168.30.13; do
+    echo "==================== 작업 중: $IP ===================="
+    
+    # Known hosts 에러 방지
+    ssh-keyscan -H "$IP" >> ~/.ssh/known_hosts 2>/dev/null
+    
+    # [A] root로 접속하여 유저 생성, 비밀번호 설정, sudoers 권한 부여를 단일 명령어로 처리
+    sshpass -p "$ROOT_PASS" ssh -o StrictHostKeyChecking=no root@$IP "id -u ansible &>/dev/null || useradd -m -s /bin/bash ansible; echo 'ansible:$ANSIBLE_PASS' | chpasswd; grep -q '^ansible' /etc/sudoers || echo 'ansible ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers"
+    
+    # [B] 생성된 ansible 계정으로 SSH 키 배포
+    sshpass -p "$ANSIBLE_PASS" ssh-copy-id -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519.pub ansible@$IP
+    
+    echo "[완료] $IP 서버 설정 완료"
+done
+
+
+
+
+
+
 ---
 
 ## 📌 구성도
